@@ -4,8 +4,8 @@ import webpush from 'web-push'
  
 webpush.setVapidDetails(
   'mailto:<xleobtsx@gmail.com>',
-  'BMgM1RagSexiKc6vCGjFdmsz0i5X-ZlbiKmVgNWtxnrMplztM5OrKhwt7OJSrPyXg0b4mlCowwE6HPcji6JulTo',
-  'gHMlJrLA0RsMrbOfntlUqbBSEbk4GkmqxDAu6cD4fLA'
+  'BNZsp87AoMnJctuRgvu-7zkW4vSyjfdTiqWlM_hNPAG6gQXrp9_DjVpHRAVbhb86iSD3D8d1bHEjY1F_SZXFcY8',
+  'ChqlaDM08qxjs7FWqqNq_ItWc4dkMfQHHRRnQa-QuQc'
 )
  
 let subscription

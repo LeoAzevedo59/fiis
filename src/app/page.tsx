@@ -70,11 +70,11 @@ function PushNotificationManager() {
   }
  
   return (
-    <div>
+    <div className='flex flex-col gap-4'>
       {subscription ? (
         <>
           <p>You are subscribed to push notifications.</p>
-          <button onClick={unsubscribeFromPush}>Unsubscribe</button>
+          <button className='bg-red-300 text-red-700 px-4 py-2' onClick={unsubscribeFromPush}>Unsubscribe</button>
           <input
           className='text-black'
             type="text"
@@ -116,7 +116,7 @@ function InstallPrompt() {
  
   return (
     <div>
-      <button>Add to Home Screen</button>
+      <button className='bg-emerald-300 text-emerald-700 px-4 py-2'>Download</button>
       {isIOS && (
         <p>
           To install this app on your iOS device, tap the share button
@@ -137,7 +137,7 @@ function InstallPrompt() {
  
 export default function Page() {
   return (
-    <div>
+    <div className='flex flex-col w-full h-screen items-center justify-center'>
       <PushNotificationManager />
       <InstallPrompt />
     </div>
