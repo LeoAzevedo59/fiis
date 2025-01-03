@@ -1,15 +1,15 @@
 'use client'
- 
+
 import { useState, useEffect } from 'react'
 import { subscribeUser, unsubscribeUser, sendNotification } from './actions'
- 
+
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
- 
+
   const rawData = window.atob(base64)
   const outputArray = new Uint8Array(rawData.length)
- 
+
   for (let i = 0; i < rawData.length; ++i) {
     outputArray[i] = rawData.charCodeAt(i)
   }
@@ -18,18 +18,16 @@ function urlBase64ToUint8Array(base64String: string) {
 
 function PushNotificationManager() {
   const [isSupported, setIsSupported] = useState(false)
-  const [subscription, setSubscription] = useState<PushSubscription | null>(
-    null
-  )
+  const [subscription, setSubscription] = useState<PushSubscription | null>(null)
   const [message, setMessage] = useState('')
- 
+
   useEffect(() => {
     if ('serviceWorker' in navigator && 'PushManager' in window) {
       setIsSupported(true)
       registerServiceWorker()
     }
   }, [])
- 
+
   async function registerServiceWorker() {
     const registration = await navigator.serviceWorker.register('/sw.js', {
       scope: '/',
@@ -38,7 +36,7 @@ function PushNotificationManager() {
     const sub = await registration.pushManager.getSubscription()
     setSubscription(sub)
   }
- 
+
   async function subscribeToPush() {
     const registration = await navigator.serviceWorker.ready
     const sub = await registration.pushManager.subscribe({
@@ -51,24 +49,24 @@ function PushNotificationManager() {
     const serializedSub = JSON.parse(JSON.stringify(sub))
     await subscribeUser(serializedSub)
   }
- 
+
   async function unsubscribeFromPush() {
     await subscription?.unsubscribe()
     setSubscription(null)
     await unsubscribeUser()
   }
- 
+
   async function sendTestNotification() {
     if (subscription) {
       await sendNotification(message)
       setMessage('')
     }
   }
- 
+
   if (!isSupported) {
     return <p>Push notifications are not supported in this browser.</p>
   }
- 
+
   return (
     <div className='flex flex-col gap-4'>
       {subscription ? (
@@ -76,7 +74,7 @@ function PushNotificationManager() {
           <p>You are subscribed to push notifications.</p>
           <button className='bg-red-300 text-red-700 px-4 py-2' onClick={unsubscribeFromPush}>Unsubscribe</button>
           <input
-          className='text-black'
+            className='text-black'
             type="text"
             placeholder="Enter notification message"
             value={message}
@@ -95,37 +93,70 @@ function PushNotificationManager() {
 }
 
 interface Window {
-  MSStream?: unknown;
+  MSStream?: unknown
 }
 
 function InstallPrompt() {
   const [isIOS, setIsIOS] = useState(false)
   const [isStandalone, setIsStandalone] = useState(false)
- 
+  const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null)
+
   useEffect(() => {
     setIsIOS(
       /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as Window).MSStream
     )
- 
+
     setIsStandalone(window.matchMedia('(display-mode: standalone)').matches)
+
+    const handleBeforeInstallPrompt = (event: Event) => {
+      event.preventDefault()
+      setDeferredPrompt(event) // Salva o evento para ser utilizado depois
+    }
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    }
   }, [])
- 
-  if (isStandalone) {
-    return null // Don't show install button if already installed
+
+  const handleInstallClick = () => {
+    console.log('download...')
+    
+    if (deferredPrompt) {
+      (deferredPrompt as any).prompt() // Exibe o prompt de instalação
+      (deferredPrompt as any).userChoice.then((choiceResult: any) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('Usuário aceitou a instalação do PWA.')
+        } else {
+          console.log('Usuário recusou a instalação do PWA.')
+        }
+        setDeferredPrompt(null) // Reseta o evento após o uso
+      })
+    }
   }
- 
+
+  if (isStandalone) {
+    return null // Não exibe o botão de instalação se o PWA já estiver instalado
+  }
+
   return (
     <div>
-      <button className='bg-emerald-300 text-emerald-700 px-4 py-2'>Download</button>
+      <button
+        className='bg-emerald-300 text-emerald-700 px-4 py-2'
+        onClick={handleInstallClick}
+      >
+        Download
+      </button>
       {isIOS && (
         <p>
-          To install this app on your iOS device, tap the share button
-          <span role="img" aria-label="share icon">
+          Para instalar este aplicativo no seu dispositivo iOS, toque no botão de compartilhamento
+          <span role="img" aria-label="ícone de compartilhamento">
             {' '}
             ⎋{' '}
           </span>
-          Add to Home Screen
-          <span role="img" aria-label="plus icon">
+          e selecione "Adicionar à Tela Inicial"
+          <span role="img" aria-label="ícone de mais">
             {' '}
             ➕{' '}
           </span>.
@@ -134,7 +165,7 @@ function InstallPrompt() {
     </div>
   )
 }
- 
+
 export default function Page() {
   return (
     <div className='flex flex-col w-full h-screen items-center justify-center'>
