@@ -124,15 +124,17 @@ function InstallPrompt() {
     console.log('download...')
     
     if (deferredPrompt) {
-      (deferredPrompt as any).prompt() // Exibe o prompt de instalação
-      (deferredPrompt as any).userChoice.then((choiceResult: any) => {
+      // Usando asserção de tipo para garantir que deferredPrompt é do tipo correto
+      (deferredPrompt as BeforeInstallPromptEvent).prompt(); // Exibe o prompt de instalação
+
+      (deferredPrompt as BeforeInstallPromptEvent).userChoice.then((choiceResult) => {
         if (choiceResult.outcome === 'accepted') {
-          console.log('Usuário aceitou a instalação do PWA.')
+          console.log('Usuário aceitou a instalação do PWA.');
         } else {
-          console.log('Usuário recusou a instalação do PWA.')
+          console.log('Usuário recusou a instalação do PWA.');
         }
-        setDeferredPrompt(null) // Reseta o evento após o uso
-      })
+        setDeferredPrompt(null); // Reseta o evento após o uso
+      });
     }
   }
 
@@ -155,7 +157,7 @@ function InstallPrompt() {
             {' '}
             ⎋{' '}
           </span>
-          e selecione "Adicionar à Tela Inicial"
+          e selecione Adicionar à Tela Inicial
           <span role="img" aria-label="ícone de mais">
             {' '}
             ➕{' '}
